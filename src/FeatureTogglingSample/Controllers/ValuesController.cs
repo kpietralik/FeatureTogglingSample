@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using FeatureTogglingSample.Settings;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace FeatureTogglingSample.Controllers
 {
@@ -10,11 +8,18 @@ namespace FeatureTogglingSample.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        private readonly FeatureToggleSampleSettings _settings;
+
+        public ValuesController(IOptionsSnapshot<FeatureToggleSampleSettings> settings)
+        {
+            _settings = settings.Value;
+        }
+
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public ActionResult<string> Get()
         {
-            return new string[] { "value1", "value2" };
+            return _settings.Foo;
         }
 
         // GET api/values/5

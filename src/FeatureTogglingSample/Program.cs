@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 
 namespace FeatureTogglingSample
 {
@@ -19,6 +14,21 @@ namespace FeatureTogglingSample
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    var settings = config.Build();
+
+                    if (hostingContext.HostingEnvironment.IsDevelopment())
+                    {
+                        config.AddAzureAppConfiguration(o => o.Connect(settings["ConnectionStrings:AppConfig"])
+                            .Watch("FeatureToggleSampleSettings:Foo", TimeSpan.FromSeconds(1)));
+                    }
+                    else
+                    {
+                        config.AddAzureAppConfiguration(o => o.ConnectWithManagedIdentity(settings["AppConfig:Endpoint"])
+                            .Watch("FeatureToggleSampleSettings:Foo", TimeSpan.FromSeconds(1)));
+                    }
+                })
                 .UseStartup<Startup>();
     }
 }
